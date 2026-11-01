@@ -282,8 +282,8 @@ dependencies = [
 
 [[package]]
 name = "fake-github"
-version = "0.5.0"
-source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.5.0#fd08e09d4fc9fcfec2d99ad59ac1f159a77f55bb"
+version = "0.7.0"
+source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.7.0#0f97ea56249f040cead07694e1ec4066aa8bb2a6"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
