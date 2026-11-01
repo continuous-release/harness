@@ -1,0 +1,14 @@
+{
+  "name": "@continuous-release/polyglot",
+  "version": "0.0.0-dev",
+  "description": "Polyglot fixture: TypeScript package",
+  "type": "module",
+  "main": "src/index.js",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT"
+}

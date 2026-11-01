@@ -1,0 +1,87 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
+
+# rustc actions do not inherit --action_env, so pass the release version through
+# a generated env file. The genrule does see --action_env=RELEASE_VERSION.
+genrule(
+    name = "version_env",
+    outs = ["version.env"],
+    cmd = "echo RELEASE_VERSION=$$RELEASE_VERSION > $@",
+)
+
+rust_library(
+    name = "polyglot_lib",
+    srcs = [
+        "rust/src/contract.rs",
+        "rust/src/lib.rs",
+        "rust/src/version.rs",
+    ],
+    crate_name = "polyglot",
+    crate_root = "rust/src/lib.rs",
+    edition = "2021",
+    rustc_env_files = [":version_env"],
+)
+
+rust_binary(
+    name = "polyglot",
+    srcs = ["rust/src/main.rs"],
+    crate_root = "rust/src/main.rs",
+    edition = "2021",
+    deps = [":polyglot_lib"],
+)
+
+rust_test(
+    name = "rust_test",
+    crate = ":polyglot_lib",
+)
+
+genrule(
+    name = "ts_pack",
+    srcs = [
+        "scripts/build-ts.mjs",
+        "ts/package.json",
+        "ts/src/contract.js",
+        "ts/src/index.js",
+        "ts/src/version.js",
+    ],
+    outs = ["dist/polyglot.tgz"],
+    cmd = "RELEASE_VERSION=$$RELEASE_VERSION node $(location scripts/build-ts.mjs) --version \"$$RELEASE_VERSION\" --out $@",
+)
+
+genrule(
+    name = "py_wheel",
+    srcs = [
+        "python/pyproject.toml",
+        "python/src/polyglot/__init__.py",
+        "python/src/polyglot/contract.py",
+        "scripts/build-python.mjs",
+    ],
+    outs = ["dist/polyglot.whl"],
+    cmd = "RELEASE_VERSION=$$RELEASE_VERSION node $(location scripts/build-python.mjs) --version \"$$RELEASE_VERSION\" --out $@",
+)
+
+genrule(
+    name = "manifest",
+    srcs = [
+        ":polyglot",
+        ":py_wheel",
+        ":ts_pack",
+        "contract/contract.json",
+        "scripts/manifest.mjs",
+    ],
+    outs = ["dist/manifest.json"],
+    cmd = "RELEASE_VERSION=$$RELEASE_VERSION node $(location scripts/manifest.mjs) --version \"$$RELEASE_VERSION\" --out $(@D) --artifact polyglot=$(location :polyglot) --artifact polyglot.tgz=$(location :ts_pack) --artifact polyglot.whl=$(location :py_wheel)",
+)
+
+genrule(
+    name = "verify",
+    srcs = [
+        ":manifest",
+        ":polyglot",
+        ":py_wheel",
+        ":ts_pack",
+        "contract/contract.json",
+        "scripts/verify.mjs",
+    ],
+    outs = ["dist/verified.txt"],
+    cmd = "d=$(@D)/verify; mkdir -p $$d; cp $(location :polyglot) $$d/polyglot; cp $(location :ts_pack) $$d/polyglot.tgz; cp $(location :py_wheel) $$d/polyglot.whl; cp $(location :manifest) $$d/manifest.json; RELEASE_VERSION=$$RELEASE_VERSION node $(location scripts/verify.mjs) --dist $$d && touch $@",
+)

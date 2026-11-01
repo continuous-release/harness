@@ -1,0 +1,108 @@
+{
+  "name": "polyglot",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Polyglot fixture: Nx adapter",
+  "scripts": {
+    "test": "npm --prefix ts test"
+  },
+  "devDependencies": {
+    "nx": "22.7.12"
+  },
+  "nx": {
+    "targets": {
+      "codegen": {
+        "executor": "nx:run-commands",
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/contract/**/*",
+          "{projectRoot}/scripts/codegen.mjs",
+          "{projectRoot}/rust/src/contract.rs",
+          "{projectRoot}/ts/src/contract.js",
+          "{projectRoot}/python/src/polyglot/contract.py"
+        ],
+        "options": {
+          "command": "node scripts/codegen.mjs --check"
+        }
+      },
+      "rust": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["codegen"],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/rust/**/*",
+          "{projectRoot}/scripts/build-rust.sh",
+          "{projectRoot}/scripts/codegen.mjs",
+          "{projectRoot}/contract/**/*",
+          { "env": "RELEASE_VERSION" }
+        ],
+        "outputs": ["{workspaceRoot}/dist/polyglot"],
+        "options": {
+          "command": "bash scripts/build-rust.sh"
+        }
+      },
+      "ts": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["codegen"],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/ts/**/*",
+          "{projectRoot}/scripts/build-ts.mjs",
+          { "env": "RELEASE_VERSION" }
+        ],
+        "outputs": ["{workspaceRoot}/dist/polyglot.tgz"],
+        "options": {
+          "command": "node scripts/build-ts.mjs --version \"${RELEASE_VERSION:-0.0.0}\" --out dist/polyglot.tgz"
+        }
+      },
+      "python": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["codegen"],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/python/**/*",
+          "{projectRoot}/scripts/build-python.mjs",
+          { "env": "RELEASE_VERSION" }
+        ],
+        "outputs": ["{workspaceRoot}/dist/polyglot.whl"],
+        "options": {
+          "command": "node scripts/build-python.mjs --version \"${RELEASE_VERSION:-0.0.0}\" --out dist/polyglot.whl"
+        }
+      },
+      "finalize": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["rust", "ts", "python"],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/scripts/manifest.mjs",
+          "{projectRoot}/scripts/verify.mjs",
+          "{projectRoot}/contract/**/*",
+          { "env": "RELEASE_VERSION" }
+        ],
+        "outputs": [
+          "{workspaceRoot}/dist/manifest.json"
+        ],
+        "options": {
+          "command": "VERSION=\"${RELEASE_VERSION:-$(cat version.txt)}\"; node scripts/manifest.mjs --version \"$VERSION\" --out dist --artifact polyglot=dist/polyglot --artifact polyglot.tgz=dist/polyglot.tgz --artifact polyglot.whl=dist/polyglot.whl && node scripts/verify.mjs --dist dist"
+        }
+      },
+      "test": {
+        "executor": "nx:run-commands",
+        "dependsOn": ["codegen"],
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/ts/**/*",
+          "{projectRoot}/python/**/*",
+          "{projectRoot}/rust/**/*"
+        ],
+        "options": {
+          "commands": [
+            "npm --prefix ts test",
+            "PYTHONPATH=python/src python3 -m unittest discover -s python/tests"
+          ],
+          "parallel": false
+        }
+      }
+    }
+  }
+}

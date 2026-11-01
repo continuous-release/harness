@@ -79,6 +79,7 @@ template, including the `base` tag.
 | Scenario | What it proves |
 | --- | --- |
 | `first-release` | No tags starts at `0.1.0` |
+| `polyglot-release` | One contract releases a Rust binary, npm tarball, and Python wheel |
 | `patch` | A fix bumps patch |
 | `minor` | A feature bumps minor |
 | `major-bang` | `!` bumps major |
@@ -108,6 +109,12 @@ GITHUB_TOKEN=... cargo run --release --locked -- seed \
 This copies the template, commits it, and force-moves the `base` tag. The
 harness always resets to `base`, so the template is the real source of truth.
 Repeat for `sandbox-1` … `sandbox-3` when the pool needs a reset.
+
+The template includes `fixtures/polyglot`, a snapshot of
+`continuous-release/polyglot` v0.1.2. Refresh it with
+`scripts/sync-polyglot-fixture.sh ../polyglot`. The harness runs its canonical
+fast path and verifies all three artifacts; the polyglot repository's CI matrix
+covers the four build-system adapters.
 
 ## Caveats
 

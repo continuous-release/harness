@@ -1,0 +1,23 @@
+{
+  "defaultBase": "main",
+  "targetDefaults": {
+    "codegen": {
+      "cache": true
+    },
+    "rust": {
+      "cache": true
+    },
+    "ts": {
+      "cache": true
+    },
+    "python": {
+      "cache": true
+    },
+    "finalize": {
+      "cache": true
+    },
+    "test": {
+      "cache": true
+    }
+  }
+}

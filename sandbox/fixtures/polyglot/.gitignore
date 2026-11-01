@@ -1,0 +1,15 @@
+/target
+/rust/target
+/dist
+/dist-buck
+/node_modules
+/buck-out
+/result
+/result-*
+/.nx
+/bazel-*
+*.tgz
+*.whl
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -1,0 +1,12 @@
+[package]
+name = "polyglot"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+name = "polyglot"
+path = "src/lib.rs"
+
+[[bin]]
+name = "polyglot"
+path = "src/main.rs"

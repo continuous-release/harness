@@ -1,0 +1,5 @@
+common --enable_bzlmod
+test --test_output=errors
+
+build --action_env=PATH
+build --action_env=RELEASE_VERSION

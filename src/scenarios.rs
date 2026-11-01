@@ -186,6 +186,26 @@ pub fn scenarios() -> Vec<Scenario> {
             ..Scenario::default()
         },
         Scenario {
+            name: "polyglot-release",
+            description: "One contract releases a Rust binary, npm tarball, and Python wheel.",
+            commits: vec![CommitSpec::message("feat: release the polyglot fixture")],
+            config: ConfigOverride {
+                system: Some("node".into()),
+                directory: Some("fixtures/polyglot".into()),
+                setup: Some(String::new()),
+                test: Some(String::new()),
+                build: Some("bash scripts/build-release.sh".into()),
+                publish: Some(String::new()),
+                artifact: Some("dist/*".into()),
+            },
+            expect: Expectation {
+                assets: vec!["manifest.json", "polyglot", "polyglot.tgz", "polyglot.whl"],
+                notes_include: vec!["### Features", "release the polyglot fixture"],
+                ..tag("v0.1.0")
+            },
+            ..Scenario::default()
+        },
+        Scenario {
             name: "patch",
             description: "A fix after v1.2.3 bumps the patch version.",
             initial_tags: vec!["v1.2.3"],
