@@ -1,0 +1,9 @@
+{
+  "system": "node",
+  "directory": "fixtures/node",
+  "setup": "npm install --ignore-scripts",
+  "test": "npm test",
+  "build": "mkdir -p dist && npm version \"$VERSION\" --no-git-tag-version --allow-same-version && npm pack --pack-destination dist",
+  "publish": "",
+  "artifact": "dist/*.tgz"
+}

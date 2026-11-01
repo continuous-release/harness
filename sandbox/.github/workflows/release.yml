@@ -1,0 +1,61 @@
+name: release
+
+# Live sandbox for the continuous-release harness. The harness force-pushes
+# main from the `base` tag, writes scenario.json, and pushes a commit. This
+# workflow reads the scenario and delegates to the org's reusable contract.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+  attestations: write
+
+jobs:
+  config:
+    name: config
+    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: ubuntu-latest
+    outputs:
+      system: ${{ steps.config.outputs.system }}
+      directory: ${{ steps.config.outputs.directory }}
+      setup: ${{ steps.config.outputs.setup }}
+      test: ${{ steps.config.outputs.test }}
+      build: ${{ steps.config.outputs.build }}
+      publish: ${{ steps.config.outputs.publish }}
+      artifact: ${{ steps.config.outputs.artifact }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: config
+        run: |
+          {
+            echo "system=$(jq -r '.system // "node"' scenario.json)"
+            echo "directory=$(jq -r '.directory // "fixtures/node"' scenario.json)"
+            echo "setup=$(jq -r '.setup // ""' scenario.json)"
+            echo "test=$(jq -r '.test // ""' scenario.json)"
+            echo "build=$(jq -r '.build // ""' scenario.json)"
+            echo "publish=$(jq -r '.publish // ""' scenario.json)"
+            echo "artifact=$(jq -r '.artifact // ""' scenario.json)"
+          } >> "$GITHUB_OUTPUT"
+
+  release:
+    name: release
+    needs: config
+    uses: continuous-release/.github/.github/workflows/auto-release.yml@main
+    with:
+      system: ${{ needs.config.outputs.system }}
+      working-directory: ${{ needs.config.outputs.directory }}
+      setup-command: ${{ needs.config.outputs.setup }}
+      test-command: ${{ needs.config.outputs.test }}
+      build-command: ${{ needs.config.outputs.build }}
+      publish-command: ${{ needs.config.outputs.publish }}
+      artifact-glob: ${{ needs.config.outputs.artifact }}
+      toolkit-ref: v0.3.1
