@@ -283,7 +283,7 @@ dependencies = [
 [[package]]
 name = "fake-github"
 version = "0.2.0"
-source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.2.0#6c8e8459e34e4e28759d2ba2ea4fd7700980ecac"
+source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.2.0#9e170bcea1e33508e4359c1829f41113dd8ca72d"
 dependencies = [
  "anyhow",
  "percent-encoding",
