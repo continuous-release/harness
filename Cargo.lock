@@ -282,12 +282,13 @@ dependencies = [
 
 [[package]]
 name = "fake-github"
-version = "0.3.0"
-source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.3.0#eaaed2abaef5627964ea2e9b88dde36d28e124af"
+version = "0.4.0"
+source = "git+https://github.com/continuous-release/fake-github.git?tag=v0.4.0#4615f3c4d1e8f60ad0aa3a047bc4f1d676a34f7f"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
  "percent-encoding",
+ "serde",
  "serde_json",
  "tiny_http",
  "url",
