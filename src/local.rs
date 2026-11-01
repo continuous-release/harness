@@ -5,12 +5,12 @@ use std::path::{Path, PathBuf};
 use anyhow::{bail, Context, Result};
 use tempfile::TempDir;
 
-use crate::assert::Snapshot;
-use crate::fake_github::FakeGitHub;
+use crate::assert::{Snapshot, SnapshotAsset, SnapshotRelease};
 use crate::process::{
     base_env, copy_dir_all, expand_artifact, git, parse_outputs, run_cr, run_shell, write_file,
 };
 use crate::scenarios::{rerun_input, SandboxConfig, Scenario, Trigger};
+use fake_github::FakeGitHub;
 
 #[derive(Clone, Debug)]
 pub struct LocalOptions {
@@ -196,7 +196,20 @@ impl LocalRepo {
 fn failure_snapshot(fake: &FakeGitHub, error: impl std::fmt::Display) -> Snapshot {
     Snapshot {
         conclusion: Some("failure".into()),
-        releases: fake.list_releases(),
+        releases: fake
+            .list_releases()
+            .into_iter()
+            .map(|release| SnapshotRelease {
+                tag_name: release.tag_name,
+                prerelease: release.prerelease,
+                body: release.body,
+                assets: release
+                    .assets
+                    .into_iter()
+                    .map(|asset| SnapshotAsset { name: asset.name })
+                    .collect(),
+            })
+            .collect(),
         tags: fake.list_tags(),
         error: Some(format!("{error:#}")),
     }
@@ -205,7 +218,20 @@ fn failure_snapshot(fake: &FakeGitHub, error: impl std::fmt::Display) -> Snapsho
 fn success_snapshot(fake: &FakeGitHub) -> Snapshot {
     Snapshot {
         conclusion: Some("success".into()),
-        releases: fake.list_releases(),
+        releases: fake
+            .list_releases()
+            .into_iter()
+            .map(|release| SnapshotRelease {
+                tag_name: release.tag_name,
+                prerelease: release.prerelease,
+                body: release.body,
+                assets: release
+                    .assets
+                    .into_iter()
+                    .map(|asset| SnapshotAsset { name: asset.name })
+                    .collect(),
+            })
+            .collect(),
         tags: fake.list_tags(),
         error: None,
     }

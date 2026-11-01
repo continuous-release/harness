@@ -1,5 +1,4 @@
 mod assert;
-mod fake_github;
 mod github;
 mod local;
 mod process;
