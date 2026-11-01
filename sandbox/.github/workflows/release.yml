@@ -8,6 +8,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish-override:
+        description: Override the publish command (harness)
+        required: false
+        type: string
 
 concurrency:
   group: release-${{ github.repository }}
@@ -35,14 +40,21 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - id: config
+        env:
+          PUBLISH_OVERRIDE: ${{ inputs.publish-override }}
         run: |
+          publish="$(jq -r '.publish // ""' scenario.json)"
+          if [ -n "${PUBLISH_OVERRIDE:-}" ]; then
+            publish="$PUBLISH_OVERRIDE"
+          fi
+
           {
             echo "system=$(jq -r '.system // "node"' scenario.json)"
             echo "directory=$(jq -r '.directory // "fixtures/node"' scenario.json)"
             echo "setup=$(jq -r '.setup // ""' scenario.json)"
             echo "test=$(jq -r '.test // ""' scenario.json)"
             echo "build=$(jq -r '.build // ""' scenario.json)"
-            echo "publish=$(jq -r '.publish // ""' scenario.json)"
+            echo "publish=$publish"
             echo "artifact=$(jq -r '.artifact // ""' scenario.json)"
           } >> "$GITHUB_OUTPUT"
 
