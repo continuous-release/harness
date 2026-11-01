@@ -372,7 +372,7 @@ fn run_contract(
 pub fn run_local_scenario(scenario: &Scenario, options: &LocalOptions) -> Result<LocalRunSet> {
     let config = SandboxConfig::default().merged(&scenario.config);
     let repo = LocalRepo::new(&options.template)?;
-    let mut fake = FakeGitHub::new();
+    let mut fake = FakeGitHub::with_default_repo("local", "repo");
     fake.start()?;
 
     let result = (|| -> Result<LocalRunSet> {
